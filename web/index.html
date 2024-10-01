@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="$FLUTTER_BASE_HREF">
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta content="Beyond Tickets, Beyond Ordinary. Elevate your experience." name="description">
+    <meta content="PinnKET, ticketing, ticket purchase, event, event ticketing" name="keywords">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <link href="icons/Icon-192.png" rel="apple-touch-icon">
+    <link href="icons/Icon-512.png" rel="apple-touch-icon" sizes="512x512">
+    <link href="icons/Icon-192.png" rel="apple-touch-icon" sizes="192x192">
+    <link href="favicon.png" rel="icon" type="image/png">
+    <title>PinnKET - Beyond Tickets, Beyond Ordinary</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <link href="manifest.json" rel="manifest">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        function generatePDF(htmlContent, fileName) {
+          const { jsPDF } = window.jspdf;
+
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = htmlContent;
+          document.body.appendChild(tempDiv);
+
+          html2canvas(tempDiv, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            allowTaint: true,
+            windowWidth: 1000, // Match the max-width of the container
+          }).then(canvas => {
+            document.body.removeChild(tempDiv);
+
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+            const imgX = (pdfWidth - imgWidth * ratio) / 2;
+            const imgY = 0;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'JPEG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+            heightLeft -= pdfHeight;
+
+            while (heightLeft >= 0) {
+              position = heightLeft - imgHeight;
+              pdf.addPage();
+              pdf.addImage(imgData, 'JPEG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+              heightLeft -= pdfHeight;
+            }
+
+            pdf.save(fileName);
+          });
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap"
+          rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
+    <script type="application/javascript"
+            src="/assets/packages/flutter_inappwebview_web/assets/web/web_support.js"
+            defer></script>
+    <style>
+        :root {
+     --primary-green: #4c9c45;
+     --primary-orange: #f6921e;
+     --text-dark: #1F2937;
+     --text-light: #F9FAFB;
+     --background-light: #F3F4F6;
+     --shadow-color: rgba(0, 0, 0, 0.1);
+ }
+
+ body, html {
+     margin: 0;
+     padding: 0;
+     font-family: 'Poppins', sans-serif;
+     scroll-behavior: smooth;
+     overflow-x: hidden;
+     color: var(--text-dark);
+     line-height: 1.6;
+ }
+
+ #landing-page {
+     display: block;
+ }
+
+.hero {
+    min-height: 100vh;
+    background: url('splash/boy.jpg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    padding: 2rem;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.hero > * {
+    position: relative;
+    z-index: 2;
+}
+
+ .hero-content {
+     max-width: 900px;
+     padding: 3rem;
+
+     border-radius: 20px;
+
+     transition: all 0.3s ease;
+ }
+
+ .hero-content:hover {
+     transform: translateY(-5px);
+
+ }
+ nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 10px;
+    z-index: 10;
+}
+
+.logo-container {
+    padding-left: 20px;
+}
+
+.logo {
+    max-width: 150px;
+    width: 100%;
+    height: auto;
+}
+
+ .hero-content .logo {
+     max-width: 300px;
+     width: 100%;
+     height: auto;
+
+ }
+
+ .hero-buttons {
+     display: flex;
+     justify-content: center;
+     gap: 20px;
+     flex-wrap: wrap;
+     margin-top: 2rem;
+ }
+
+ .hero-button {
+     position: relative;
+     padding: 12px 24px;
+     font-size: 0.7rem;
+     background-color: var(--primary-orange);
+     color: var(--text-light);
+     border: none;
+     border-radius: 50px;
+     cursor: pointer;
+     transition: all 0.3s ease;
+     box-shadow: 0 4px 6px var(--shadow-color);
+     font-weight: 600;
+     text-transform: uppercase;
+     letter-spacing: 1px;
+     overflow: hidden;
+     z-index: 1;
+     width: auto;
+     min-width: 200px;
+ }
+
+ .hero-button::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+     transform: translateX(-100%);
+     transition: 0.6s;
+     z-index: -1;
+ }
+
+ .hero-button:hover::before {
+     transform: translateX(100%);
+ }
+
+ .hero-button:hover {
+     transform: translateY(-3px);
+     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+ }
+
+ .hero-button:active {
+     transform: translateY(-1px);
+     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+ }
+
+ .hero-button.coming-soon {
+     background-color: var(--primary-green);
+     cursor: default;
+ }
+
+ .hero-button.coming-soon:hover {
+     transform: none;
+     box-shadow: 0 4px 6px var(--shadow-color);
+ }
+
+ .coming-soon-overlay {
+     position: absolute;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background-color: rgba(0, 0, 0, 0.7);
+     color: var(--text-light);
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     border-radius: 50px;
+     font-size: 0.8rem;
+     opacity: 0;
+     transition: opacity 0.3s ease;
+     font-weight: 500;
+ }
+
+ .hero-button.coming-soon:hover .coming-soon-overlay {
+     opacity: 1;
+ }
+
+ .button-loader {
+     border: 2px solid rgba(255, 255, 255, 0.3);
+     border-top: 2px solid rgba(255, 255, 255, 1);
+     border-radius: 50%;
+     width: 16px;
+     height: 16px;
+     animation: spin 1s linear infinite;
+     display: none;
+     margin-right: 8px;
+ }
+
+ .loading-text {
+     display: none;
+     color: white;
+     font-size: 0.8rem;
+     font-weight: 600;
+ }
+
+ .hero-button.loading {
+     background-color: rgba(0, 0, 0, 0.3);
+     cursor: not-allowed;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+ }
+.additional-text {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+ .hero-content .additional-image {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.hero-content .additional-image:hover {
+    transform: scale(1.05);
+}
+
+ .hero-button.loading .button-loader {
+     display: inline-block;
+ }
+
+ .hero-button.loading .loading-text {
+     display: inline-block;
+ }
+
+ .hero-button.loading span {
+     display: none;
+ }
+
+ @keyframes spin {
+     0% { transform: rotate(0deg); }
+     100% { transform: rotate(360deg); }
+ }
+
+ .features {
+     background-color: var(--background-light);
+ }
+
+ .features h2 {
+     text-align: center;
+     font-size: 1.5rem;
+     margin-bottom: 3rem;
+     color: var(--primary-green);
+     position: relative;
+ }
+
+ .features h2::after {
+     content: '';
+     position: absolute;
+     bottom: -10px;
+     left: 50%;
+     transform: translateX(-50%);
+     width: 50px;
+     height: 3px;
+     background-color: var(--primary-orange);
+ }
+
+ .feature-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+     gap: 2rem;
+     max-width: 1200px;
+     margin: 0 auto;
+ }
+
+ .feature-item {
+     background-color: white;
+     padding: 2rem;
+     border-radius: 15px;
+     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+     text-align: center;
+     transition: transform 0.3s ease, box-shadow 0.3s ease;
+     border-top: 5px solid var(--primary-green);
+     overflow: hidden;
+ }
+
+ .feature-item:hover {
+     transform: translateY(-5px);
+     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+ }
+
+ .feature-item img {
+     width: 100%;
+     height: 200px;
+     object-fit: cover;
+     border-radius: 10px;
+     margin-bottom: 1rem;
+     transition: transform 0.3s ease;
+ }
+
+ .feature-item:hover img {
+     transform: scale(1.05);
+ }
+
+ .feature-item h3 {
+     font-size: 1.5rem;
+     margin-bottom: 1rem;
+     color: var(--primary-orange);
+ }
+
+ .feature-item p {
+     font-size: 1rem;
+     color: var(--text-dark);
+     line-height: 1.6;
+ }
+
+ #loader, #full-screen-loader {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100vw;
+     height: 100vh;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     background-color: rgba(255, 255, 255, 0.9);
+     z-index: 9999;
+ }
+
+ .loader-container {
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+ }
+
+ .logo-loader {
+     width: 150px;
+     height: 100px;
+     object-fit: contain;
+     animation: pulse 1.5s ease-in-out infinite;
+ }
+
+ .loader-text {
+     margin-top: 20px;
+     font-family: 'Poppins', sans-serif;
+     font-size: 12px;
+     font-weight: 100;
+ }
+ .image-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+ @keyframes pulse {
+     0% {
+         transform: scale(1);
+         opacity: 1;
+     }
+     50% {
+         transform: scale(1.1);
+         opacity: 0.7;
+     }
+     100% {
+         transform: scale(1);
+         opacity: 1;
+     }
+ }
+
+ @media (max-width: 768px) {
+     .hero-content {
+         padding: 2rem;
+     }
+
+     .hero-content .logo {
+         max-width: 200px;
+     }
+
+     .hero-buttons {
+         flex-direction: column;
+         align-items: center;
+         gap: 15px;
+     }
+
+     .hero-button {
+         width: 100%;
+         max-width: none;
+     }
+     .hero-content .additional-image {
+        max-width: 300px;
+    }
+
+     .feature-grid {
+         grid-template-columns: 1fr;
+     }
+ }
+
+ @media (max-width: 480px) {
+     .hero-content .logo {
+         max-width: 150px;
+     }
+     .additional-text {
+         font-size: 1rem;
+         }
+
+       .hero-content .additional-image {
+        max-width: 250px;
+    }
+
+     .hero-button {
+         padding: 10px 20px;
+         font-size: 0.8rem;
+     }
+ }
+    </style>
+    <script>
+        window.addEventListener('load', function() {
+            let params = new URLSearchParams(window.location.search);
+            localStorage.setItem('viewDownload', params.get('viewDownload') === 'true');
+            localStorage.setItem('eventId', params.get('eventId'));
+            localStorage.setItem('tickettransfer', params.get('tickettransfer') === 'true');
+            localStorage.setItem('editMode', params.get('editMode') === 'true');
+            localStorage.setItem('token', params.get('token'));
+            localStorage.setItem('orderNo', params.get('orderNo'));
+
+        });
+
+    </script>
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pinnitagsapiv1.westus.cloudapp.azure.com/generalFiles/pinnketlogo.png">
+    <meta property="og:title" content="PinnKET: Book your event ticket, Secure your travel spot">
+    <meta property="og:description" content="Beyond Tickets, Beyond Ordinary. Elevate your experience.">
+    <meta property="og:image" content="https://pinnitagsapiv1.westus.cloudapp.azure.com/generalFiles/pinnketlogo.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://pinnitagsapiv1.westus.cloudapp.azure.com/generalFiles/pinnketlogo.png">
+    <meta property="twitter:title" content="PinnKET: Book your event ticket, Secure your travel spot">
+    <meta property="twitter:description" content="Beyond Tickets, Beyond Ordinary. Elevate your experience.">
+    <meta property="twitter:image" content="https://pinnitagsapiv1.westus.cloudapp.azure.com/generalFiles/pinnketlogo.png">
+
+    <script>
+        function updateOGTags() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const title = urlParams.get('name') || 'PinnKET';
+            const description = urlParams.get('description') || 'Check out this event!';
+            const image = urlParams.get('image') || 'https://pinnitagsapiv1.westus.cloudapp.azure.com/generalFiles/pinnketlogo.png';
+            const url = window.location.href;
+
+            document.querySelector('meta[property="og:title"]').setAttribute("content", title);
+            document.querySelector('meta[property="og:description"]').setAttribute("content", description);
+            document.querySelector('meta[property="og:image"]').setAttribute("content", image);
+            document.querySelector('meta[property="og:url"]').setAttribute("content", url);
+
+            document.querySelector('meta[property="twitter:title"]').setAttribute("content", title);
+            document.querySelector('meta[property="twitter:description"]').setAttribute("content", description);
+            document.querySelector('meta[property="twitter:image"]').setAttribute("content", image);
+            document.querySelector('meta[property="twitter:url"]').setAttribute("content", url);
+
+            document.title = title;
+        }
+
+        // Run the function when the page loads
+        window.onload = updateOGTags;
+    </script>
+</head>
+<body>
+
+<div id="loader" style="display: none;">
+    <div class="loader-spinner"></div>
+</div>
+
+<div id="landing-page">
+    <nav>
+        <div class="logo-container">
+            <img src="icons/sc.png" alt="PinnKET Logo" class="logo">
+        </div>
+    </nav>
+    <section class="hero">
+        <div class="hero-content">
+
+            <div class="image-column">
+                <div class="additional-text">Beyond Tickets, Beyond Ordinary</div>
+                <img src="splash/elevateTransparent2.png" alt="PinnKET Experience"
+                     class="additional-image">
+            </div>
+
+            <div class="hero-buttons">
+                <button id="explore-events-button" class="hero-button book-event"
+                        onclick="startApp()">
+                    <span>Secure Your Event Ticket</span>
+                    <div class="button-loader"></div>
+                    <div class="loading-text">Loading Events...</div>
+                </button>
+                <button class="hero-button coming-soon reserve-bus" onclick="window.location.href='coming_soon.html'">
+    <span>Reserve Your Travel Spot</span>
+    <div class="coming-soon-overlay">Coming Soon</div>
+</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <h2>Why Choose PinnKET?</h2>
+        <div class="feature-grid">
+            <div class="feature-item">
+                <img src="splash/image_2.jpeg" alt="Seamless Booking">
+                <h3>Seamless Booking</h3>
+                <p>Book your tickets with ease and convenience, anytime, anywhere.</p>
+            </div>
+            <div class="feature-item">
+                <img src="splash/image_3.jpeg" alt="Diverse Events">
+                <h3>Diverse Events</h3>
+                <p>From concerts to sports, find tickets for a wide range of events.</p>
+            </div>
+            <div class="feature-item">
+                <img src="splash/image_4.jpeg" alt="Secure Transactions">
+                <h3>Secure Transactions</h3>
+                <p>Feel confident with our safe and reliable payment system.</p>
+            </div>
+            <div class="feature-item">
+                <img src="splash/image_5.jpeg" alt="Mobile Ready">
+                <h3>Mobile Ready</h3>
+                <p>Access your tickets on-the-go with our mobile-friendly platform.</p>
+            </div>
+            <div class="feature-item">
+                <img src="splash/image_6.jpeg" alt="Customer Support">
+                <h3>24/7 Support</h3>
+                <p>Our dedicated team is always ready to assist you.</p>
+            </div>
+            <div class="feature-item">
+                <img src="splash/image_1.jpeg" alt="Exclusive Deals">
+                <h3>Exclusive Deals</h3>
+                <p>Unlock special offers and discounts when you book with us.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+
+<script src="flutter_bootstrap.js" async></script>
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDVzukJGi2gWsLdYIBCktuBB3pV8j6NcyI",
+      authDomain: "pinnket-9532e.firebaseapp.com",
+      projectId: "pinnket-9532e",
+      storageBucket: "pinnket-9532e.appspot.com",
+      messagingSenderId: "567734049850",
+      appId: "1:567734049850:web:0426234a8ee5cff73a2903",
+      measurementId: "G-QXDSHN4ZWR"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+
+</script>
+</body>
+</html>
