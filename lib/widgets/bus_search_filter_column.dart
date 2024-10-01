@@ -8,10 +8,10 @@ class BusSearchFilterColumn extends StatefulWidget {
   final Function onFiltersReset;
 
   const BusSearchFilterColumn({
-    Key? key,
+    super.key,
     required this.onFiltersApplied,
     required this.onFiltersReset,
-  }) : super(key: key);
+  });
 
   @override
   _BusSearchFilterColumnState createState() => _BusSearchFilterColumnState();

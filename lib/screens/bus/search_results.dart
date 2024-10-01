@@ -8,7 +8,8 @@ import 'package:pinnket/utils/layout.dart';
 import 'package:iconsax/iconsax.dart';
 
 import '../../widgets/header.dart';
-import '../app/main_screen.dart';
+import '../../widgets/shimmer_effect.dart';
+
 
 class BusTypeGroup {
   final String type;
@@ -224,7 +225,9 @@ class _BusSearchResultsScreenState extends State<BusSearchResultsScreen> with Si
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
+                  child: _isLoading
+                      ? const SortingOptionsShimmer()
+                      : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -254,7 +257,9 @@ class _BusSearchResultsScreenState extends State<BusSearchResultsScreen> with Si
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
+            child: _isLoading
+                ? const SortingOptionsShimmer()
+                : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -325,12 +330,18 @@ class _BusSearchResultsScreenState extends State<BusSearchResultsScreen> with Si
     );
   }
 
+
+
   Widget _buildGroupedResultsList(BuildContext context, BusTypeGroup group) {
     if (_isLoading) {
-      return SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator()),
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+              (context, index) => const BusResultShimmer(),
+          childCount: 5,
+        ),
       );
     }
+
 
     return SliverList(
       delegate: SliverChildBuilderDelegate(
@@ -464,6 +475,13 @@ class _BusSearchResultsScreenState extends State<BusSearchResultsScreen> with Si
   }
 
   void _navigateToBusDetails(BuildContext context, BusResult bus) {
+    print("Navigating to bus details");
+    print("Bus: ${bus.companyName}");
+    print("Departure Time: ${bus.departureTime}");
+    print("Arrival Time: ${bus.arrivalTime}");
+    print("Price: ${bus.price}");
+    print("From: ${widget.from}");
+    print("To: ${widget.to}");
     context.go('/bus-details', extra: {
       'from': widget.from,
       'to': widget.to,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../models/bus_type.dart';
 import '../app/main_screen.dart';
@@ -9,42 +11,36 @@ class BusDetailsAndSeatSelection extends StatefulWidget {
   final Bus bus;
   final String from;
   final String to;
-  final DateTime departureTime;
-  final DateTime arrivalTime;
+  final String departureTime;
+  final String arrivalTime;
   final double price;
 
   const BusDetailsAndSeatSelection({
-    Key? key,
+    super.key,
     required this.bus,
     required this.from,
     required this.to,
     required this.departureTime,
     required this.arrivalTime,
     required this.price,
-  }) : super(key: key);
+  });
 
   @override
-  _BusDetailsAndSeatSelectionState createState() =>
-      _BusDetailsAndSeatSelectionState();
+  _BusDetailsAndSeatSelectionState createState() => _BusDetailsAndSeatSelectionState();
 }
 
-class _BusDetailsAndSeatSelectionState
-    extends State<BusDetailsAndSeatSelection> {
+class _BusDetailsAndSeatSelectionState extends State<BusDetailsAndSeatSelection> {
   Set<int> selectedSeats = {};
   bool isRefundable = false;
   int selectedMealOption = 0;
-  List<String> mealOptions = [
-    'No meal',
-    'Vegetarian',
-    'Non-vegetarian',
-    'Vegan'
-  ];
+  List<String> mealOptions = ['No meal', 'Vegetarian', 'Non-vegetarian', 'Vegan'];
 
   @override
   Widget build(BuildContext context) {
     return MainScreen(
       title: 'Select Seats',
       showSearchFAB: false,
+      showFooter: false,
       bodySliver: [
         SliverToBoxAdapter(child: _buildBusDetails()),
         SliverToBoxAdapter(child: _buildSeatSelectionHeader()),
@@ -57,17 +53,19 @@ class _BusDetailsAndSeatSelectionState
   Widget _buildBusDetails() {
     return Card(
       margin: const EdgeInsets.all(16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                    child: Text(widget.bus.company,
-                        style: Theme.of(context).textTheme.titleLarge)),
+                  child: Text(widget.bus.company, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                ),
                 _buildBusTypeChip(),
               ],
             ),
@@ -76,7 +74,7 @@ class _BusDetailsAndSeatSelectionState
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.3, end: 0, curve: Curves.easeOutQuad);
   }
 
   Widget _buildBusTypeChip() {
@@ -84,10 +82,11 @@ class _BusDetailsAndSeatSelectionState
     return Chip(
       label: Text(
         widget.bus.type.toString().split('.').last.toUpperCase(),
-        style: TextStyle(color: color.shade50),
+        style: TextStyle(color: color.shade50, fontWeight: FontWeight.bold),
       ),
       backgroundColor: color.shade100,
       side: BorderSide(color: color.shade300),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 
@@ -105,36 +104,23 @@ class _BusDetailsAndSeatSelectionState
   Widget _buildJourneyInfo() {
     return Row(
       children: [
-        Expanded(
-            child:
-                _buildLocationTime('From', widget.from, widget.departureTime)),
+        Expanded(child: _buildLocationTime('From', widget.from, widget.departureTime)),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Icon(Iconsax.arrow_right_3, color: Colors.grey),
+          child: Icon(Iconsax.arrow_right_3, color: Colors.grey, size: 32),
         ),
-        Expanded(
-            child: _buildLocationTime('To', widget.to, widget.arrivalTime,
-                alignRight: true)),
+        Expanded(child: _buildLocationTime('To', widget.to, widget.arrivalTime, alignRight: true)),
       ],
     );
   }
 
-  Widget _buildLocationTime(String label, String location, DateTime time,
-      {bool alignRight = false}) {
+  Widget _buildLocationTime(String label, String location, String time, {bool alignRight = false}) {
     return Column(
-      crossAxisAlignment:
-          alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: Colors.grey)),
-        Text(location, style: Theme.of(context).textTheme.titleMedium),
-        Text(
-          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+        Text(location, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(time, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).primaryColor)),
       ],
     );
   }
@@ -145,8 +131,7 @@ class _BusDetailsAndSeatSelectionState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Select Your Seats',
-              style: Theme.of(context).textTheme.titleLarge),
+          Text('Select Your Seats', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           _buildSeatLegend(),
         ],
@@ -156,11 +141,10 @@ class _BusDetailsAndSeatSelectionState
 
   Widget _buildSeatLegend() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _buildLegendItem(Colors.grey.shade300, 'Available'),
-        const SizedBox(width: 16),
         _buildLegendItem(Theme.of(context).colorScheme.primary, 'Selected'),
-        const SizedBox(width: 16),
         _buildLegendItem(Colors.red.shade300, 'Booked'),
       ],
     );
@@ -170,15 +154,15 @@ class _BusDetailsAndSeatSelectionState
     return Row(
       children: [
         Container(
-          width: 16,
-          height: 16,
+          width: 20,
+          height: 20,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(4),
           ),
         ),
-        const SizedBox(width: 4),
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(width: 8),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
       ],
     );
   }
@@ -239,21 +223,21 @@ class _BusDetailsAndSeatSelectionState
         const SizedBox(height: 16),
         _buildBaggageInfo(),
       ],
-    );
+    ).animate().fadeIn(duration: 300.ms).slideX(begin: -0.3, end: 0, curve: Curves.easeOutQuad);
   }
 
   Widget _buildTripDetails() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Trip Details',
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            _buildTripDetailItem(Iconsax.calendar, 'Date',
-                widget.departureTime.toString().split(' ')[0]),
+            Text('Trip Details', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            _buildTripDetailItem(Iconsax.calendar, 'Date', widget.departureTime.toString().split(' ')[0]),
             _buildTripDetailItem(Iconsax.clock, 'Duration', '6h 30m'),
             _buildTripDetailItem(Iconsax.location, 'Distance', '350 km'),
           ],
@@ -264,14 +248,14 @@ class _BusDetailsAndSeatSelectionState
 
   Widget _buildTripDetailItem(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: Colors.grey),
-          const SizedBox(width: 8),
+          Icon(icon, size: 24, color: Theme.of(context).primaryColor),
+          const SizedBox(width: 12),
           Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
           const Spacer(),
-          Text(value),
+          Text(value, style: TextStyle(color: Theme.of(context).primaryColor)),
         ],
       ),
     );
@@ -279,13 +263,15 @@ class _BusDetailsAndSeatSelectionState
 
   Widget _buildAmenities() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Amenities', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
+            Text('Amenities', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -304,37 +290,47 @@ class _BusDetailsAndSeatSelectionState
 
   Widget _buildAmenityChip(IconData icon, String label) {
     return Chip(
-      avatar: Icon(icon, size: 16),
+      avatar: Icon(icon, size: 18, color: Theme.of(context).primaryColor),
       label: Text(label),
-      backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      side: BorderSide(color: Theme.of(context).primaryColor),
     );
   }
 
   Widget _buildRefundableOption() {
-    return SwitchListTile(
-      title: const Text('Refundable Ticket'),
-      subtitle: const Text('Extra \$10 for refundable option'),
-      value: isRefundable,
-      onChanged: (bool value) {
-        setState(() {
-          isRefundable = value;
-        });
-      },
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: SwitchListTile(
+        title: const Text('Refundable Ticket'),
+        subtitle: const Text('Extra \$10 for refundable option'),
+        value: isRefundable,
+        onChanged: (bool value) {
+          setState(() {
+            isRefundable = value;
+          });
+        },
+        secondary: Icon(Iconsax.shield_tick, color: Theme.of(context).primaryColor),
+      ),
     );
   }
 
   Widget _buildMealSelection() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Meal Preference',
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            DropdownButton<int>(
-              isExpanded: true,
+            Text('Meal Preference', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<int>(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                prefixIcon: const Icon(Iconsax.cake),
+              ),
               value: selectedMealOption,
               items: List.generate(mealOptions.length, (index) {
                 return DropdownMenuItem<int>(
@@ -358,14 +354,15 @@ class _BusDetailsAndSeatSelectionState
 
   Widget _buildBaggageInfo() {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Baggage Allowance',
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
+            Text('Baggage Allowance', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
             _buildBaggageItem(Iconsax.bag, 'Carry-on', '1 x 7kg'),
             _buildBaggageItem(Iconsax.box, 'Check-in', '1 x 20kg'),
           ],
@@ -376,11 +373,11 @@ class _BusDetailsAndSeatSelectionState
 
   Widget _buildBaggageItem(IconData icon, String label, String allowance) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: Colors.grey),
-          const SizedBox(width: 8),
+          Icon(icon, size: 24, color: Theme.of(context).primaryColor),
+          const SizedBox(width: 12),
           Text(label),
           const Spacer(),
           Text(allowance, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -394,6 +391,7 @@ class _BusDetailsAndSeatSelectionState
       scrollDirection: Axis.horizontal,
       child: Container(
         margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(16),
@@ -408,18 +406,18 @@ class _BusDetailsAndSeatSelectionState
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.3, end: 0, curve: Curves.easeOutQuad);
   }
 
   Widget _buildDriverSection() {
     return Container(
-      width: 60,
-      height: 60,
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(40),
       ),
-      child: const Icon(Iconsax.bus, size: 30),
+      child:  SvgPicture.asset('assets/icons/wheel.svg'),
     );
   }
 
@@ -430,7 +428,7 @@ class _BusDetailsAndSeatSelectionState
         mainAxisSize: MainAxisSize.min,
         children: row.map((seatNumber) {
           if (seatNumber == 0) {
-            return const SizedBox(width: 40); // Aisle
+            return const SizedBox(width: 50); // Aisle
           }
           return _buildSeat(seatNumber);
         }).toList(),
@@ -445,32 +443,37 @@ class _BusDetailsAndSeatSelectionState
 
     return GestureDetector(
       onTap: isBooked ? null : () => _toggleSeatSelection(seatNumber),
-      child: Container(
-        width: 40,
-        height: 40,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: 45,
+        height: 45,
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: isBooked
               ? Colors.red.shade300
-              : (isSelected ? theme.colorScheme.primary : Colors.grey.shade300),
+              : (isSelected ? theme.colorScheme.primary : Colors.grey.shade200),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color:
-                isSelected ? theme.colorScheme.primary : Colors.grey.shade400,
-            width: 1,
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected ? theme.colorScheme.primary.withOpacity(0.3) : Colors.transparent,
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Center(
           child: Text(
             seatNumber.toString(),
             style: TextStyle(
-              color: isSelected || isBooked ? Colors.white : Colors.black,
+              color: isSelected || isBooked ? Colors.white : Colors.black87,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
       ),
-    );
+    ).animate()
+        .scale(duration: 300.ms, curve: Curves.easeOutBack)
+        .fadeIn(duration: 300.ms);
   }
 
   void _toggleSeatSelection(int seatNumber) {
@@ -494,20 +497,19 @@ class _BusDetailsAndSeatSelectionState
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
           ),
         ],
       ),
       child: SafeArea(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     'Total: \$${totalPrice.toStringAsFixed(2)}',
@@ -532,31 +534,39 @@ class _BusDetailsAndSeatSelectionState
               style: ElevatedButton.styleFrom(
                 foregroundColor: theme.colorScheme.onPrimary,
                 backgroundColor: theme.colorScheme.primary,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(30),
                 ),
               ),
-              child: const Text('Continue to Booking'),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Continue'),
+                  SizedBox(width: 8),
+                  Icon(Iconsax.arrow_right_3, size: 18),
+                ],
+              ),
             ),
           ],
         ),
       ),
-    );
+    ).animate().slideY(begin: 1, end: 0, duration: 300.ms, curve: Curves.easeOutQuad);
   }
 
   void _navigateToBookingConfirmation(double totalPrice) {
-    context.go('/booking-confirmation', extra: {
+    Map<String, dynamic> bookingDetails = {
       'bus': widget.bus,
       'from': widget.from,
       'to': widget.to,
-      'departureTime': widget.departureTime,
-      'arrivalTime': widget.arrivalTime,
+      'departureTime': DateTime(2024, 3, 15, 10, 0), // Example date and time
+      'arrivalTime': DateTime(2024, 3, 15, 16, 30), // Example date and time
       'price': totalPrice,
       'selectedSeats': selectedSeats.toList(),
       'isRefundable': isRefundable,
       'mealPreference': mealOptions[selectedMealOption],
-    });
+      'passengers': 2, // Number of passengers
+    };
+    context.go('/booking-confirmation', extra: bookingDetails);
   }
 }

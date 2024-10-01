@@ -135,95 +135,107 @@ class _BusScreenState extends State<BusScreen> {
   }
 
   Widget _buildSearchSection() {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final isSmallScreen = constraints.maxWidth < 600;
+        return Card(
+          elevation: 8,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          margin: EdgeInsets.all(isSmallScreen ? 16 : 24),
+          child: Padding(
+            padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Find Your Journey',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                  ),
-                  TextButton.icon(
-                    icon: Icon(_showRecentSearches
-                        ? Iconsax.arrow_up_2
-                        : Iconsax.arrow_down_1),
-                    label: Text(
-                        _showRecentSearches ? 'Hide Recent' : 'Show Recent'),
-                    onPressed: () {
-                      setState(() {
-                        _showRecentSearches = !_showRecentSearches;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              if (_showRecentSearches) _buildRecentSearches(),
-              const SizedBox(height: 24),
-              _buildTripTypeSelector(),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildCityDropdown(
-                          'From', _from, (val) => setState(() => _from = val))),
-                  const SizedBox(width: 16),
-                  Expanded(
-                      child: _buildCityDropdown(
-                          'To', _to, (val) => setState(() => _to = val))),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                      child: _buildDatePicker('Departure', _date,
-                          (val) => setState(() => _date = val))),
-                  const SizedBox(width: 16),
-                  Expanded(
-                      child: _isRoundTrip
-                          ? _buildDatePicker('Return', _returnDate,
-                              (val) => setState(() => _returnDate = val))
-                          : const SizedBox()),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _buildPassengerSelector(),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _searchBuses,
-                  icon: const Icon(Iconsax.search_normal),
-                  label: const Text('Search Buses'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  _buildHeader(isSmallScreen),
+                  if (_showRecentSearches) _buildRecentSearches(),
+                  SizedBox(height: isSmallScreen ? 16 : 24),
+                  _buildTripTypeSelector(),
+                  SizedBox(height: isSmallScreen ? 16 : 24),
+                  if (isSmallScreen) ...[
+                    _buildCityDropdown('From', _from, (val) => setState(() => _from = val)),
+                    const SizedBox(height: 16),
+                    _buildCityDropdown('To', _to, (val) => setState(() => _to = val)),
+                  ] else
+                    Row(
+                      children: [
+                        Expanded(child: _buildCityDropdown('From', _from, (val) => setState(() => _from = val))),
+                        const SizedBox(width: 16),
+                        Expanded(child: _buildCityDropdown('To', _to, (val) => setState(() => _to = val))),
+                      ],
                     ),
-                  ),
-                ),
+                  SizedBox(height: isSmallScreen ? 16 : 24),
+                  if (isSmallScreen) ...[
+                    _buildDatePicker('Departure', _date, (val) => setState(() => _date = val)),
+                    if (_isRoundTrip) ...[
+                      const SizedBox(height: 16),
+                      _buildDatePicker('Return', _returnDate, (val) => setState(() => _returnDate = val)),
+                    ],
+                  ] else
+                    Row(
+                      children: [
+                        Expanded(child: _buildDatePicker('Departure', _date, (val) => setState(() => _date = val))),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _isRoundTrip
+                              ? _buildDatePicker('Return', _returnDate, (val) => setState(() => _returnDate = val))
+                              : const SizedBox(),
+                        ),
+                      ],
+                    ),
+                  SizedBox(height: isSmallScreen ? 16 : 24),
+                  _buildPassengerSelector(),
+                  SizedBox(height: isSmallScreen ? 24 : 32),
+                  _buildSearchButton(),
+                ],
               ),
-            ],
+            ),
+          ),
+        ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuad);
+      },
+    );
+  }
+
+  Widget _buildSearchButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: _searchBuses,
+        icon: const Icon(Iconsax.search_normal),
+        label: const Text('Search Buses'),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
           ),
         ),
       ),
-    )
-        .animate()
-        .fadeIn(duration: 600.ms)
-        .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuad);
+    );
   }
+
+  Widget _buildHeader(bool isSmallScreen) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Find Your Journey',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        if (!isSmallScreen)
+          TextButton.icon(
+            icon: Icon(_showRecentSearches ? Iconsax.arrow_up_2 : Iconsax.arrow_down_1),
+            label: Text(_showRecentSearches ? 'Hide Recent' : 'Show Recent'),
+            onPressed: () => setState(() => _showRecentSearches = !_showRecentSearches),
+          ),
+      ],
+    );
+  }
+
 
   Widget _buildRecentSearches() {
     final recentSearches = [
@@ -605,6 +617,6 @@ class _BusScreenState extends State<BusScreen> {
 // Add this extension method at the end of the file
 extension StringExtension on String {
   String capitalize() {
-    return "${this[0].toUpperCase()}${this.substring(1).toLowerCase()}";
+    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
   }
 }

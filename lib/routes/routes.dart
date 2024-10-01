@@ -217,15 +217,8 @@ final GoRouter goRouter = GoRouter(
     GoRoute(
       path: '/booking-confirmation',
       builder: (BuildContext context, GoRouterState state) {
-        final Map<String, dynamic> params = state.extra as Map<String, dynamic>;
-        return BookingConfirmationScreen(
-          busCompany: params['busCompany'],
-          from: params['from'],
-          to: params['to'],
-          departureTime: params['departureTime'],
-          arrivalTime: params['arrivalTime'],
-          price: params['price'],
-          selectedSeats: params['selectedSeats'],
+        return BookingConfirmationCheckout(
+          bookingDetails: state.extra as Map<String, dynamic>,
         );
       },
     ),
